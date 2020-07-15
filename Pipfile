@@ -5,6 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
+pep8 = "*"
+pylint-flask = "*"
 
 [packages]
 flask = "*"
