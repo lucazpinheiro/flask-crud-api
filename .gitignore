@@ -2,3 +2,4 @@
 __pycache__
 test.rest
 /model
+lite.db
