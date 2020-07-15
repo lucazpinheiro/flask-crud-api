@@ -34,18 +34,9 @@ ma = Marshmallow(app)
 # data class/model
 class Character(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # name = db.Column(db.String(100), unique=True)
-    # description = db.Column(db.String(200))
-    # price = db.Column(db.Float)
-    # qty = db.Column(db.Integer)
-    fname = db.Column(db.String(100), unique=True)
-    lname = db.Column(db.String(100), unique=True)
+    fname = db.Column(db.String(100))
+    lname = db.Column(db.String(100))
 
-    # def __init__(self, name, description, price, qty):
-    #     self.name = name
-    #     self.description = description
-    #     self.price = price
-    #     self.qty = qty
     def __init__(self, fname, lname):
         self.fname = fname
         self.lname = lname
@@ -53,17 +44,70 @@ class Character(db.Model):
 # product schema
 class CharacterSchema(ma.Schema):
     class Meta:
-        # fields = ('id', 'name', 'description', 'price', 'qty')
         fields = ('id', 'fname', 'lname')
 
 
 # init schema
-character_schema = CharacterSchema(many = True)
-# characters_schema = CharacterSchema(many = True, strict = True)
+character_schema = CharacterSchema()
+characters_schema = CharacterSchema(many = True)
 
-@app.route('/', methods=['GET'])
-def get():
-    return jsonify({ 'message': 'Hello world!' })
+# get all characters
+@app.route('/character', methods=['GET'])
+def get_all():
+    all_characters = Character.query.all()
+    result = characters_schema.dump(all_characters)
+    return jsonify(result)
+
+
+# get character by id
+@app.route('/character/<id>', methods=['GET'])
+def get_one(id):
+    # character = Character.query.filter(Character.id == id).one_or_none()
+    character = Character.query.get(id)
+
+    result = character_schema.dump(character)
+    return jsonify(result)
+
+
+# create character
+@app.route('/character', methods=['POST'])
+def add_character():
+    fname = request.json['fname']
+    lname = request.json['lname']
+
+    new_character = Character(fname, lname)
+    db.session.add(new_character)
+    db.session.commit()
+
+    return character_schema.jsonify(new_character)
+
+
+# update character by id
+@app.route('/character/<id>', methods=['PUT'])
+def update_one(id):
+    character = Character.query.get(id)
+
+    fname = request.json['fname']
+    lname = request.json['lname']
+
+    character.fname = fname
+    character.lname = lname
+
+    db.session.commit()
+
+    return character_schema.jsonify(character)
+
+
+# delete character by id
+@app.route('/character/<id>', methods=['DELETE'])
+def delete_one(id):
+    character = Character.query.get(id)
+
+    db.session.delete(character)
+    db.session.commit()
+
+    return character_schema.jsonify(character)
+
 
 # run server
 if __name__ == '__main__':
