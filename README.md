@@ -35,3 +35,20 @@ First, you will need to have ```Python 3.8``` and ```Pipenv``` installed.
 0. Finally, run ```python app.py```
 
 Now you can make requests to ```http://localhost:5000/character```
+
+
+## running app
+```sh
+export FLASK_APP=app
+export FLASK_ENV=Development
+export FLASK_DEBUG=True
+
+flask run
+```
+migration
+
+```sh
+flask db init
+flask db migrate
+flask db upgrade
+```
