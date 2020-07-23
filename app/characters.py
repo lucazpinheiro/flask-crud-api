@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, make_response, abort
 from .model import Character
 from .serializer import CharacterSchema
 
@@ -17,14 +17,16 @@ def get_all():
 
 
 # get character by id
-@bp_characters.route('/character/<id>', methods=['GET'])
-def get_one(id):
-    print(id)
-    character = Character.query.filter(Character.id == id).one_or_none()
-    character = Character.query.get(id)
+@bp_characters.route('/character/<character_id>', methods=['GET'])
+def get_one(character_id):
+    print(character_id)
+    character = Character.query.filter(Character.id == character_id).one_or_none()
 
-    result = character_schema.dump(character)
-    return jsonify(result)
+    if character is not None:
+        result = character_schema.dump(character)
+        return jsonify(result)
+    else:
+        abort(404, f'Character not found for ID: {character_id} not found')
 
 
 # create character
@@ -34,36 +36,52 @@ def add_character():
     lname = request.json['lname']
 
     new_character = Character(fname, lname)
-    # new_character = Character(request.json)
 
-    current_app.db.session.add(new_character)
-    current_app.db.session.commit()
+    """
+    create condition to add new character ex: characters can't have 
+    the same lname, so check if the lname alredy exist in the databse
+    """
+    condition = True
 
-    return character_schema.jsonify(new_character)
-    # return { 'message': 'ta indo'}
+    # check if character can be created 
+    if condition:
+        current_app.db.session.add(new_character)
+        current_app.db.session.commit()
+
+        return character_schema.jsonify(new_character), 201
+    else:
+        abort(409, f"couldn't be created, because X")
+
 
 # update character by id
-@bp_characters.route('/character/<id>', methods=['PUT'])
-def update_one(id):
-    character = Character.query.get(id)
-
+@bp_characters.route('/character/<character_id>', methods=['PUT'])
+def update_one(character_id):
     fname = request.json['fname']
     lname = request.json['lname']
 
-    character.fname = fname
-    character.lname = lname
+    character = Character.query.get(character_id)
+    print('character query', character)
 
-    current_app.db.session.commit()
+    if character is not None:
+        character.fname = fname
+        character.lname = lname
 
-    return character_schema.jsonify(character)
+        current_app.db.session.commit()
+
+        return character_schema.jsonify(character)
+    else:
+        abort(404, f"character with ID: {character_id} was not found")
 
 
 # delete character by id
-@bp_characters.route('/character/<id>', methods=['DELETE'])
-def delete_one(id):
-    character = Character.query.get(id)
+@bp_characters.route('/character/<character_id>', methods=['DELETE'])
+def delete_one(character_id):
+    character = Character.query.get(character_id)
 
-    current_app.db.session.delete(character)
-    current_app.db.session.commit()
-
-    return character_schema.jsonify(character)
+    if character is not None:
+        current_app.db.session.delete(character)
+        current_app.db.session.commit()
+    
+        return character_schema.jsonify(character)
+    else:
+        abort(404, f"character with ID: {character_id} was not found")
