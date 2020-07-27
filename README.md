@@ -25,30 +25,28 @@ The data structure for the character resource is the following:
 - Add a more complex data model.
 - Add more routes with query possibilities.
 
-## ```Hot to run```
+## Running app
 
 First, you will need to have ```Python 3.8``` and ```Pipenv``` installed.
 
-0. Clone the repo and navigate to the root of the project
 0. Run ```Pipenv Shell```
-0. Run ```python build_database.py``` this will create an ```SQLite``` database and will add some initial data
-0. Finally, run ```python app.py```
 
-Now you can make requests to ```http://localhost:5000/character```
+0. Run 
+    ```sh
+    flask db init
+    flask db migrate
+    flask db upgrade
+    ``` 
+    this will create an ```SQLite``` database.
 
+0. Run
+    ```sh
+    export FLASK_APP=app
+    export FLASK_ENV=Development
+    export FLASK_DEBUG=True
 
-## running app
-```sh
-export FLASK_APP=app
-export FLASK_ENV=Development
-export FLASK_DEBUG=True
+    flask run
+    ```
 
-flask run
-```
-migration
+### Now you can make requests to ```http://localhost:5000/character```
 
-```sh
-flask db init
-flask db migrate
-flask db upgrade
-```
